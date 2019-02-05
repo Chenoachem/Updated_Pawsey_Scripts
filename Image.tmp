@@ -1,0 +1,29 @@
+#setup parameters
+
+datadir=DATADIR
+proj=PROJ
+obsnum=OBSNUM
+imsize=4000
+ncpus=NCPUS
+threshold=0.5
+scale=0.0065
+mgain=0.85
+
+
+# setup a clean environment
+source /group/mwa/software/module-reset.sh
+module use /group/mwa/software/modulefiles
+module load mwapy
+module load manta-ray-client
+module load MWA_Tools
+module list
+
+
+
+cd /astro/mwasci/ctremblay/G0018_VELA_Test/${obsnum}
+#apply calibration solutions
+applysolutions ${obsnum}.ms 1198861104_self_solutions.bin
+#change phase centre to minimise the number of w-terms.
+chgcentre -minw -shiftback ${obsnum}.ms
+#make an image of the science field.
+time wsclean -name ${obsnum}_retry -abs-mem 38 -size ${imsize} ${imsize} -niter 400000 -join-channels -channels-out 24 -auto-threshold 1 -auto-mask 3 -mgain 1 -weight briggs 0.5 -scale ${scale} -clean-border 1 ${obsnum}.ms
