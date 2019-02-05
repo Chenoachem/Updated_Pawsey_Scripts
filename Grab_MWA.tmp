@@ -1,0 +1,67 @@
+datadir=DATADIR
+obsnum=OBSNUM
+tres=1
+fres=10
+csvfile="${obsnum}_dl.csv"
+
+# setup a clean environment
+source /group/mwa/software/module-reset.sh
+module use /group/mwa/software/modulefiles
+module load mwapy
+module load manta-ray-client
+module list
+
+set -x
+
+# turn on timestamps
+{
+
+# check that the ASVO environment variables are set
+if [[ -z ${MWA_ASVO_API_KEY} ]]
+then
+    echo "Error, MWA_ASVO_API_KEY not set"
+    echo "Cannot use client"
+    test_fail 1
+fi
+
+mkdir -p ${datadir}/${obsnum}
+
+cd ${datadir}/${obsnum}
+
+# encode the conversion options into a csv file
+echo "obs_id=${obsnum}, job_type=c, timeres=${tres}, freqres=${fres}, edgewidth=80, conversion=ms, allowmissing=true, flagdcchannels=true, usepcentre=true" > ${csvfile}
+
+
+outfile="${obsnum}_ms.zip"
+msfile="${obsnum}.ms"
+
+if [[ -e "${outfile}" ]]
+then
+    echo "${outfile} exists, not downloading again"
+elif [[ -e "${msfile}" ]]
+then
+    echo "${msfile} exists, not downloading again"
+else
+    mwa_client --csv=${csvfile} --dir=${datadir}/${obsnum}
+    test_fail $?
+fi
+
+
+
+# unzip the file if it exists
+if [[ -e "${outfile}" ]]
+then
+    # -n = don't ask for user input
+    unzip -n ${outfile}
+    test_fail $?
+    # update permissions because they come out of the zip file wrong
+    chmod -R ugo+r ${msfile}
+    chmod -R ug+w ${msfile}
+
+    rm ${outfile}
+fi
+
+cd ${base}
+python bin/track_task.py finish --jobid=${SLURM_JOBID} --finish_time=`date +%s`
+} 2> >(awk '{print strftime("%F %T")";",$0; fflush()}' >&2) \
+  1> >(awk '{print strftime("%F %T")";",$0; fflush()}')
