@@ -8,3 +8,15 @@
 #SBATCH --output=/astro/mwasci/ctremblay/Out_Files/OUTPUT.o%j
 #SBATCH --error=/astro/mwasci/ctremblay/Out_Files/OUTPUT.e%j
 #SBATCH --export=NONE 
+
+
+
+# Queues up some data grabbing via ASVO
+
+#SBATCH -p copyq
+#SBATCH --account=mwasci
+#SBATCH --time=12:00:00
+#SBATCH --output=DATADIR/Out_Files/OUTPUT.o%j
+#SBATCH --error=DATADIR/Out_Files/OUTPUT.e%j
+#SBATCH --export=NONE
+#SBATCH -M zeus
