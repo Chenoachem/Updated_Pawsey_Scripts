@@ -1,0 +1,10 @@
+#!/bin/bash -l
+
+# Calibrate the data
+#SBATCH -M 'magnus'
+#SBATCH --account=pawsey0280
+#SBATCH -p workq
+#SBATCH --time=24:00:00
+#SBATCH --output=/astro/mwasci/ctremblay/Out_Files/OUTPUT.o%j
+#SBATCH --error=/astro/mwasci/ctremblay/Out_Files/OUTPUT.e%j
+#SBATCH --export=NONE 
